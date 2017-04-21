@@ -19,6 +19,7 @@ class JAMDialog(pygame.sprite.OrderedUpdates):
 	def __init__(self, mensaje="JAMDialog", funcion_ok=None, funcion_cancel=None):
 		''' Es un grupo de sprite que contiene: JAMButton aceptar, JAMButton cancelar, Base.'''
 		pygame.sprite.OrderedUpdates.__init__(self)
+		self.resolucion= (1200,900)
 		self.mensaje= mensaje
 		self.funcion_ok= None #funcion_ok
 		self.funcion_cancel= None #funcion_cancel
@@ -90,17 +91,17 @@ class JAMDialog(pygame.sprite.OrderedUpdates):
 		self.boton_cancelar.set_imagen(origen=imagencancelar , tamanio=tamanio)
 		self.Reconstruye_JAMDialog(["imagenbuttons"])
 
-	def connect(self, funcion_ok=None, funcion_cancel=None):
+	def connect(self, funcion_ok = None, funcion_cancel = None):
 		''' Conecta los Botones a Funciones. '''
 		if funcion_ok != self.funcion_ok:
-			self.funcion_ok= funcion_ok
-			self.boton_aceptar.connect(callback=self.funcion_ok, sonido_select=VG.get_sound_select())
+			self.funcion_ok = funcion_ok
+			self.boton_aceptar.connect(callback = self.funcion_ok, sonido_select = None)
 		if funcion_cancel != self.funcion_cancel:
-			self.funcion_cancel= funcion_cancel
-			self.boton_cancelar.connect(callback=self.funcion_cancel, sonido_select=VG.get_sound_select())
+			self.funcion_cancel = funcion_cancel
+			self.boton_cancelar.connect(callback = self.funcion_cancel, sonido_select = None)
 		if not funcion_ok or not funcion_cancel:
-			self.boton_aceptar.connect(sonido_select=VG.get_sound_select())
-			self.boton_cancelar.connect(sonido_select=VG.get_sound_select())
+			self.boton_aceptar.connect(sonido_select = None)
+			self.boton_cancelar.connect(sonido_select = None)
 	# ------ Botones
 
 	def set_colors_dialog(self, base=None, bordes=None):
@@ -117,11 +118,14 @@ class JAMDialog(pygame.sprite.OrderedUpdates):
 
 	def set_center(self):
 		''' Centra la base y posiciona los botones. '''
+		'''
 		w,h= (800, 600)
 		try:
 			w,h= (pygame.display.Info().current_w, pygame.display.Info().current_h)
 		except:
-			w,h= (800, 600)
+			w,h= (800, 600)'''
+		
+		w,h= self.resolucion
 		self.base.rect.center= (w/2,h/2)
 		x= self.base.rect.x+self.separador
 		y= self.base.rect.y+self.base.rect.h-self.separador-self.boton_aceptar.rect.h

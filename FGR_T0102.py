@@ -6,61 +6,60 @@
 #   https://sites.google.com/site/sugaractivities/
 #   http://codigosdeejemplo.blogspot.com/
 
-import pygame, gc, sys, random, gtk, pygtk
+import pygame
+import gc
+import sys
+import random
+import gtk
+import gobject
 from pygame.locals import *
-
 import Globals as G
 gc.enable()
-
 import BiblioJAM
 from BiblioJAM.JAMButton import JAMButton
 from BiblioJAM.JAMLabel import JAMLabel
 import BiblioJAM.JAMGlobals as JAMG
 
-class FGR_T0102():
-	def __init__(self, main):
-		# Variables para JAMatrix
-		self.ventana= None
-		self.name= "Tipos de señales"
-		self.estado= False
-
-		self.main= main
-		self.ventana= self.main.ventana
-
-		# Variables del Juego
-		self.fondo= None
-		self.reloj= None
-		self.puntos= 0
-
+class FGR_T0102(gtk.Widget):
+	__gsignals__ = {"run_grupo":(gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_STRING,gobject.TYPE_INT))}
+	def __init__(self, usuario):
+		gtk.Widget.__init__(self)
+		self.usuario = usuario
+		self.ventana = None
+		self.nombre = "Tipos de señales"
+		self.estado = False
+		self.fondo = None
+		self.reloj = None
+		self.puntos = 0
 		# Sprites
-		self.textos= None
-		self.botonesmenu= None
-		self.controles= None
-		self.seniales= None
-		self.carteles= None
-		self.senial_select= None
-
+		self.textos = None
+		self.botonesmenu = None
+		self.controles = None
+		self.seniales = None
+		self.carteles = None
+		self.senial_select = None
 		# sonidos
-		self.sonido_error= None
-		self.sonido_exito= None
-		self.sound_select= None
-
+		self.sonido_error = None
+		self.sonido_exito = None
+		self.sound_select = None
 		# Escalado
-		self.ventana_real= None
-		self.resolucionreal= None
-		self.VA= None
-		self.VH= None
+		self.ventana_real = None
+		self.resolucionreal = None
+		self.VA = None
+		self.VH = None
+		self.estado = "Intro"
+		self.load()
 
 	def run(self):
-		self.preset()
-
-		from BiblioJAM.JAMatrix import JAMatrix
-		matrix= JAMatrix(self, self.ventana_real, self.resolucionreal)
-		matrix.set_imagen_matrix(None)
-		matrix.carga_game()
-
-		self.estado= "Intro"
-		self.switch()
+		if self.estado == "Intro":
+			self.controles.stop()
+			self.fondo = self.fondo1
+			return self.run_menu()
+		elif self.estado == "Game":
+			self.puntos = 0
+			self.fondo = self.fondo2
+			self.reset()
+			return self.run_juego()
 
 	def run_menu(self):
 		self.ventana.blit(self.fondo, (0,0))
@@ -102,27 +101,13 @@ class FGR_T0102():
 			self.seniales.update()
 			self.carteles.update()
 			self.controles.update()
-			self.handle_event_Game()
+			#self.handle_event_Game()
 			pygame.event.clear()
 			self.carteles.draw(self.ventana)
 			self.seniales.draw(self.ventana)
 			self.controles.draw(self.ventana)
 			self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
 			pygame.display.update()
-			#self.victory()
-			#self.game_over(None)
-
-	def switch(self):
-		if self.estado== "Intro":
-			self.controles.stop()
-			self.fondo = self.fondo1
-			self.set_event_intro()
-			return self.run_menu()
-		elif self.estado== "Game":
-			self.puntos= 0
-			self.fondo = self.fondo2
-			self.reset()
-			return self.run_juego()
 
 	def reset(self):
 		self.puntos= 0
@@ -139,16 +124,14 @@ class FGR_T0102():
 
 	def deja_en(self, cartel):
 		if self.senial_select:
-			if self.senial_select.name == cartel.name:
+			if self.senial_select.nombre == cartel.nombre:
 				self.sonido_exito.play()
 				self.senial_select.ubicada= True
 				self.controles.recuadro_select.remove(self.controles)
-
 				random.seed()
 				posicion= random.choice(cartel.posiciones)
 				cartel.posiciones.remove(posicion)
 				self.senial_select.rect.x, self.senial_select.rect.y= posicion
-
 				self.senial_select= None
 				self.puntos+= 10
 				self.controles.actualiza_puntos()
@@ -175,7 +158,6 @@ class FGR_T0102():
 		self.controles.stop()
 		self.puntos+= (10*self.controles.cronometro.get_tiempo_restante())
 		self.controles.actualiza_puntos()
-
 		self.ventana.blit(self.fondo, (0,0))
 		self.carteles.draw(self.ventana)
 		self.seniales.draw(self.ventana)
@@ -183,18 +165,14 @@ class FGR_T0102():
 		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
 		pygame.display.update()
 		pygame.time.wait(1000)
-
 		text1= "Bien, consiguieron su primer sticker!"
 		text2= ""
- 
-		mensaje= Mensaje(self, "Victory", text1, text2)
+ 		mensaje= Mensaje(self, "Victory", text1, text2)
 		self.fondo= self.fondo1
-
 		self.ventana.blit(self.fondo, (0,0))
 		mensaje.draw(self.ventana)
 		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
 		pygame.display.update()
-
 		while mensaje.estado == True:
 			self.reloj.tick(35)
 			mensaje.clear(self.ventana, self.fondo)
@@ -202,7 +180,6 @@ class FGR_T0102():
 			mensaje.draw(self.ventana)
 			self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
 			pygame.display.update()
-
 		pygame.time.wait(6000)
 		return self.salir(True)
 
@@ -211,7 +188,6 @@ class FGR_T0102():
 		self.controles.update() # para actualizar imagen de progressbar del reloj
 		self.controles.stop()
 		self.controles.actualiza_puntos()
-
 		self.ventana.blit(self.fondo, (0,0))
 		self.carteles.draw(self.ventana)
 		self.seniales.draw(self.ventana)
@@ -219,18 +195,14 @@ class FGR_T0102():
 		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
 		pygame.display.update()
 		pygame.time.wait(1000)
-
 		text1= "Te han Faltado Unos Segundos Para Completar la Actividad."
 		text2= "Prueba Nuevamente."
-
 		mensaje= Mensaje(self, "End", text1, text2)
 		self.fondo= self.fondo1
-
 		self.ventana.blit(self.fondo, (0,0))
 		mensaje.draw(self.ventana)
 		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
 		pygame.display.update()
-
 		while mensaje.estado == True:
 			self.reloj.tick(35)
 			mensaje.clear(self.ventana, self.fondo)
@@ -238,45 +210,42 @@ class FGR_T0102():
 			mensaje.draw(self.ventana)
 			self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
 			pygame.display.update()
-
 		pygame.time.wait(6000)
 		return self.salir(False)
 
 	# ----------- SETEOS -------------
-	def preset(self):
+	def load(self):
+		pygame.event.set_blocked([JOYAXISMOTION, JOYBALLMOTION, JOYHATMOTION,
+			JOYBUTTONUP, JOYBUTTONDOWN, KEYUP, USEREVENT])
+		pygame.event.set_allowed([MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN,
+			KEYDOWN, VIDEORESIZE, VIDEOEXPOSE, QUIT, ACTIVEEVENT])
+		pygame.mouse.set_visible(True)
 		A, B= G.RESOLUCION
 		self.ventana = pygame.Surface( (A, B), flags=HWSURFACE )
-		self.ventana_real= pygame.display.get_surface()
-		C= pygame.display.Info().current_w
-		D= pygame.display.Info().current_h
+		self.ventana_real = pygame.display.get_surface()
+		C = pygame.display.Info().current_w
+		D = pygame.display.Info().current_h
 		self.resolucionreal= (C,D)
-		self.VA= float(C)/float(A)
-		self.VH= float(D)/float(B)
-
-	def load(self):
+		self.VA = float(C)/float(A)
+		self.VH = float(D)/float(B)
 		self.fondo1, self.fondo2= G.get_Fondos_FGR_T0102()
-		self.textos= Textos_Intro()
-		self.botonesmenu= ButtonsMenu(self)
-		self.controles= Controles(self)
-		self.seniales= Seniales(self)
-		self.carteles= Carteles(self)
+		self.textos = Textos_Intro()
+		self.botonesmenu = ButtonsMenu(self)
+		self.controles = Controles(self)
+		self.seniales = Seniales(self)
+		self.carteles = Carteles(self)
 		self.sonido_error, self.sonido_exito= G.get_Sonidos()
-		self.sound_select= JAMG.get_sound_select()
+		self.sound_select = JAMG.get_sound_select()
 		self.reloj = pygame.time.Clock()
-		self.estado= True
-	
-	def set_event_intro(self):
-		pygame.event.set_blocked([JOYAXISMOTION, JOYBALLMOTION, JOYHATMOTION, JOYBUTTONUP, JOYBUTTONDOWN, KEYUP, USEREVENT])
-		pygame.event.set_allowed([MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN, KEYDOWN, VIDEORESIZE, VIDEOEXPOSE, QUIT, ACTIVEEVENT])
-		pygame.mouse.set_visible(True)
 
 	# ----------- EVENTOS en MENU ---------------
 	def handle_event_Intro(self):
 		for event in pygame.event.get(pygame.KEYDOWN):
-			letra= pygame.key.name(event.key)
+			letra= pygame.key.nombre(event.key)
 			if letra== "escape":
 				pygame.event.clear()
-				return self.run_dialog_intro(None)
+				#return self.run_dialog_intro(None)
+				return self.salir()
 
 	def run_Instruc(self):
 		self.fondo= G.get_instruc("102")
@@ -296,7 +265,7 @@ class FGR_T0102():
 			self.botonesmenu.draw(self.ventana)
 			self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
 			pygame.display.update()
-	
+	'''
 	def run_dialog_intro(self, button):
 		from BiblioJAM.JAMDialog import JAMDialog
 		dialog= JAMDialog(mensaje="¿Abandonas el Juego?", funcion_ok=self.ok_intro, funcion_cancel=self.cancel_intro)
@@ -330,16 +299,17 @@ class FGR_T0102():
 	def ok_intro(self, button):
 		return self.salir(False)
 	def cancel_intro(self, button):
-		self.estado= "Intro"
+		self.estado= "Intro"'''
 	# ----------- EVENTOS en MENU ---------------
 
+	'''
 	# ----------- EVENTOS en JUEGO ---------------
 	def handle_event_Game(self):
 		for event in pygame.event.get(pygame.KEYDOWN):
-			letra= pygame.key.name(event.key)
+			letra= pygame.key.nombre(event.key)
 			if letra== "escape":
 				pygame.event.clear()
-				return self.run_dialog_game(None)
+				return self.run_dialog_game(None)'''
 					
 	def run_dialog_game(self, button):
 		self.controles.stop()
@@ -372,7 +342,7 @@ class FGR_T0102():
 			dialog.clear(self.ventana, self.fondo)
 			self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
 			pygame.display.update()
-			return self.switch()
+			return self.run()
 		else:
 			dialog.clear(self.ventana, self.fondo)
 			self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
@@ -380,18 +350,15 @@ class FGR_T0102():
 			self.controles.play()
 
 	def ok(self, button):
-		self.estado= "Intro"
+		#self.estado = "Intro"
+		self.salir()
 	def cancel(self, button):
 		self.estado= "Game"
 	# ----------- EVENTOS en JUEGO ---------------
 
 	def salir(self, valor= None):
-		if valor: self.estado= True
-		if not valor: self.estado= False
-		pygame.mixer.music.unpause()
-		self.seniales.empty()
-		self.carteles.empty()
-		self.controles.empty()
+		self.estado = False
+		self.emit("run_grupo", "grupo1", self.puntos)
 
 # -------- CONTROLES ----------
 class Controles(pygame.sprite.OrderedUpdates):
@@ -406,7 +373,7 @@ class Controles(pygame.sprite.OrderedUpdates):
 		self.reloj= None
 		self.progress_reloj= None
 		self.sonidos_reloj= None
-
+		self.user = None
 		self.load_sprites()
 	
 	def get_recuadro_select(self, tamanio):
@@ -429,6 +396,18 @@ class Controles(pygame.sprite.OrderedUpdates):
 		self.add(label)
 
 	def load_sprites(self):
+		imagen = self.main.usuario['personaje']
+		self.user = JAMButton(self.main.usuario['nombre'],None)
+		self.user.set_imagen(origen = imagen, tamanio = (60,60))
+		self.user.set_colores(colorbas = (0,153,255,255),
+			colorbor = (0,153,255,255), colorcara = (0,153,255,255))
+		self.user.set_tamanios(tamanio = (80,80), grosorbor = 1, detalle = 1, espesor = 1)
+		ww, hh = self.user.get_tamanio()
+		w,h = G.RESOLUCION
+		self.user.set_posicion(punto = (w - ww - 10, 25))
+		self.user.connect(callback = None, sonido_select = None)
+		self.add(self.user)
+
 		imagen= G.get_Flecha()
 		self.flecha= JAMButton("",None)
 		self.flecha.set_imagen(origen= imagen, tamanio=(100,55))
@@ -450,7 +429,7 @@ class Controles(pygame.sprite.OrderedUpdates):
 		cartel_titulo.rect.y= -60
 		self.add(cartel_titulo)
 
-		self.titulo= JAMLabel(self.main.name)
+		self.titulo= JAMLabel(self.main.nombre)
 		self.titulo.set_text(color=JAMG.get_blanco())
 		fuente, tamanio= JAMG.get_Font_fawn()
 		self.titulo.set_font_from_file(fuente, tamanio= 40)
@@ -480,15 +459,16 @@ class Controles(pygame.sprite.OrderedUpdates):
 		self.add(self.progress_reloj)
 
 	def actualiza_puntos(self):
-		puntos= "%s" %(self.main.puntos)
+		puntos = "%s" %(self.main.puntos)
 		self.puntaje.set_text(texto= puntos)
-		w,h= G.RESOLUCION
-		x,y= (w-self.puntaje.rect.w-20, 25)
+		x,y = self.user.get_posicion()
+		w,h = self.puntaje.get_tamanio()
+		x -= w+10
 		self.puntaje.set_posicion(punto= (x,y))
 
 	def switching_game(self, button):
 		self.main.estado= "Intro"
-		return self.main.switch()
+		return self.main.run()
 
 	def init(self):
 		sound= self.sonidos_reloj[0]
@@ -580,7 +560,7 @@ class Seniales(pygame.sprite.OrderedUpdates):
 			posicion= random.choice(posiciones)
 			posiciones.remove(posicion)
 			sprite= Sprite_Seniales(imagen, self.main, posicion)
-			sprite.name= seniales[senial][1]
+			sprite.nombre= seniales[senial][1]
 			self.add(sprite)
 		# el sprite para seleccionar las señales
 		self.main.controles.get_recuadro_select((w,h))
@@ -605,7 +585,7 @@ class Sprite_Seniales(pygame.sprite.Sprite):
 		self.image= imagen
 		self.rect= self.image.get_rect()
 		self.ubicada= False
-		self.name= None
+		self.nombre= None
 		self.init()
 	
 	def init(self):
@@ -651,7 +631,7 @@ class Carteles(pygame.sprite.OrderedUpdates):
 			posicion= random.choice(posiciones)
 			sprite.rect.center= posicion
 			posiciones.remove(posicion)
-			sprite.name= cartel
+			sprite.nombre= cartel
 			x,y,w,h= sprite.rect
 			posicion= (x+w/2, y+h+20)
 			self.main.controles.get_labels_carteles(cartel, posicion)
@@ -669,7 +649,7 @@ class Sprite_Carteles(pygame.sprite.Sprite):
 		self.main= main
 		self.image= imagen
 		self.rect= self.image.get_rect()
-		self.name= None
+		self.nombre= None
 		self.posiciones= None
 
 	def get_posiciones(self):
@@ -791,7 +771,8 @@ class ButtonsMenu(pygame.sprite.OrderedUpdates):
 		salir.set_colores(colorbas=JAMG.get_negro(), colorcara=JAMG.get_negro())
 		salir.set_tamanios(tamanio=(0,0), grosorbor=1, detalle=1, espesor=1)
 		salir.set_posicion(punto= (10,10))
-		salir.connect (callback= self.main.run_dialog_intro)
+		#salir.connect (callback= self.main.run_dialog_intro)
+		salir.connect (callback = self.main.salir, sonido_select = None)
 		self.add(salir)
 
 		jugar= JAMButton("Jugar",None)
@@ -802,7 +783,7 @@ class ButtonsMenu(pygame.sprite.OrderedUpdates):
 		jugar.set_tamanios(tamanio=(200,0), grosorbor=1, detalle=1, espesor=1)
 		w,h= G.RESOLUCION
 		ww,hh= jugar.get_tamanio()
-		jugar.set_posicion(punto= (w-ww-5,h-hh-50))
+		jugar.set_posicion(punto= (w-ww-10,h-hh-10))
 		jugar.connect (callback= self.run_Instruc)
 		self.add(jugar)
 
@@ -815,7 +796,7 @@ class ButtonsMenu(pygame.sprite.OrderedUpdates):
 	def switching(self, button):
 		self.main.estado= "Game"
 		pygame.event.clear()
-		return self.main.switch()
+		return self.main.run()
 # --------- Botones en Menu (Salir y Jugar) ------------------
 
 # --------- Mensaje Final ---------
@@ -922,8 +903,4 @@ class Mensaje(pygame.sprite.OrderedUpdates):
 			self.label2.rect.x= self.x_final_label2
 			self.label1.rect.x= self.x_final_label1
 			self.estado= False
-# --------- Mensaje Final ---------
-
-if __name__ == "__main__":
-	FGR_T0102()
 

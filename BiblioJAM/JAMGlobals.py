@@ -68,7 +68,8 @@ def get_rojo1():
 # DE BiblioJAM
 def get_jamimagenes():
 	''' Devuelve las imágenes de BiblioJAM. '''
-	return DIRECTORIO_BIBLIOJAM + "/Recursos/Iconos/CeibalJAM.png", DIRECTORIO_BIBLIOJAM + "/Recursos/Iconos/bandera_uruguay.png"
+	return (DIRECTORIO_BIBLIOJAM + "/Recursos/Iconos/CeibalJAM.png", DIRECTORIO_BIBLIOJAM + "/Recursos/Iconos/bandera_uruguay.png",
+	DIRECTORIO_BIBLIOJAM + "/Recursos/Iconos/licencia.png")
 def get_terron():
 	''' Devuelve Terron de CeibalJAM! '''
 	return DIRECTORIO_BIBLIOJAM + "/Recursos/Iconos/icono_jam.png"
@@ -256,7 +257,8 @@ def get_estilo_papel_quemado():
 
 # CALENDARIO
 def get_calendar(mes, anio):
-	''' Devuelve una lista que representa los renglones para un calendario según mes y año, (anio y mes deben ser enteros). '''
+	''' Devuelve una lista que representa los renglones para
+	un calendario según mes y año, (anio y mes deben ser enteros). '''
 	import calendar
 	calendario= calendar.Calendar()
 	semanas= calendario.monthdayscalendar(anio, mes)

@@ -87,6 +87,7 @@ class JAMClock(pygame.sprite.OrderedUpdates):
 		self.alarma= tiempo
 		self.duracion_alarma= duracion
 		self.sonido_alarma= sound
+		self.alarma_activada= False # 24/11/2011 De lo contrario sólo se puede configurar la alarma 1 vez.
 
 	def set_sound(self, sound, play):
 		''' Setea el sonido del segundero del reloj. '''

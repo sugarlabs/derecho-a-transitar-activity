@@ -29,7 +29,8 @@ class JAMButton(pygame.sprite.Sprite):
 
 		COLORCARA, COLORBAS, COLORBOR, GROSORBOR, DETALLE, ESPESOR= VG.get_default_jambutton_values()
 
-		self.base= {"tamanio":None, "colorbas":COLORBAS, "colorbor":COLORBOR, "grosorbor":GROSORBOR, "detalle":DETALLE, "espesor":ESPESOR}
+		self.base= {"tamanio":None, "colorbas":COLORBAS, "colorbor":COLORBOR,
+			"grosorbor":GROSORBOR, "detalle":DETALLE, "espesor":ESPESOR}
 		self.cara= {"tamanio":None, "color":COLORCARA}
 		self.borde_label= {"grosor": 0, "color":VG.get_negro()}
 
@@ -38,7 +39,9 @@ class JAMButton(pygame.sprite.Sprite):
 		self.etiqueta_select= JAMLabel(texto)
 		self.etiqueta_select.set_contenedor(colorbas=self.base["colorbor"])
 
-		self.JAMObjects = {"JAMLabelunselect": self.etiqueta_unselect, "JAMLabelselect": self.etiqueta_select, "Base": self.base, "Cara": self.cara, "Borde": self.borde_label}
+		self.JAMObjects = {"JAMLabelunselect": self.etiqueta_unselect,
+			"JAMLabelselect": self.etiqueta_select, "Base": self.base,
+			"Cara": self.cara, "Borde": self.borde_label}
 
 		self.imagen_cara_unselect= None
 		self.imagen_cara_select= None
@@ -393,22 +396,6 @@ class JAMButton(pygame.sprite.Sprite):
 		# Se republican todos los eventos que este control no debe manejar.
 			pygame.event.post(event)
 
-	def Describe(self):
-		''' Describe la Estructura de Este Control. '''
-		estructura = '''
-		Estructura JAMButton:
-			JAMObjects:
-				JAMLabelunselect
-				JAMLabelselect
-				Base
-				Cara
-				Borde '''
-		print estructura
-		print "Ejemplo, Configuración actual:\n"
-		print "\t", self.JAMObjects.keys(), "\n"
-		for k in self.JAMObjects.items():
-			print k, "\n"
-
 # ----- FIN DE CLASE JAMButton - INICIO DE DEBUG Y EJEMPLO DE LA CLASE -----
 class Ejemplo(object):
 	def __init__(self):
@@ -569,8 +556,6 @@ class Ejemplo(object):
 		pygame.event.clear()
 
 	def salir(self, datos=None):
-		print "\n"
-		self.widgets.sprites()[0].Describe()
 		pygame.quit()
 		sys.exit()
 

@@ -1,6 +1,6 @@
 [Activity]
 name = Derecho_a_Transitar
-activity_version = 1
+activity_version = 2
 service_name = org.laptop.Derecho_a_Transitar
 icon = Juego
 show_launcher = yes

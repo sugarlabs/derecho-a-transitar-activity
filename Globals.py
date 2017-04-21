@@ -6,100 +6,166 @@
 #   https://sites.google.com/site/sugaractivities/
 #   http://codigosdeejemplo.blogspot.com/
 
-import pygame, gc, sys, os, random, platform
+import pygame
+import gc
+import sys
+import os
+import random
+import platform
+import gtk
+import shelve
+
 from pygame.locals import *
 gc.enable()
+
+import BiblioJAM
+from BiblioJAM.JAMButton import JAMButton
+from BiblioJAM.JAMLabel import JAMLabel
+import BiblioJAM.JAMGlobals as JAMG
+
+GRIS = gtk.gdk.Color(60156, 60156, 60156, 1)
+AMARILLO1 = gtk.gdk.Color(65000,65000,40275,1)
+NARANJA = gtk.gdk.Color(65000,26000,0,1)
+BLANCO = gtk.gdk.Color(65535, 65535, 65535,1)
+NEGRO = gtk.gdk.Color(0, 0, 0, 1)
+CELESTE = gtk.gdk.Color(63000, 65535, 65535,1)
 
 if "olpc" in platform.platform():
 	os.environ['SDL_AUDIODRIVER'] = 'alsa'
 
-DIRECTORIO_BASE= os.path.dirname(__file__)
+DIRECTORIO_BASE = os.path.dirname(__file__)
+IMAGENES = os.path.join(DIRECTORIO_BASE, "Imagenes")
+SONIDOS = os.path.join(DIRECTORIO_BASE, "Sonidos")
+
+USERS = os.path.join(os.environ["HOME"], "DerechoATransitar")
+if not os.path.exists(USERS):
+	os.mkdir(USERS)
+	os.chmod(USERS, 0755)
+
+def get_users():
+	archivos = os.listdir(USERS)
+	usuarios = []
+	for archivo in archivos:
+		arch = shelve.open(os.path.join(USERS, archivo))
+		usuario = dict(arch)
+		arch.close()
+		usuarios.append(usuario)
+	return usuarios
 
 def Traduce_posiciones(VA, VH):
-# Escala eventos de Posición
-	eventos= pygame.event.get(pygame.MOUSEBUTTONDOWN)
+	eventos = pygame.event.get(pygame.MOUSEBUTTONDOWN)
 	for event in eventos:
 		x, y = event.pos
-		xx= x/VA
-		yy= y/VH
-		event_pos= (xx, yy)
+		xx = x/VA
+		yy = y/VH
+		event_pos = (xx, yy)
 	for event in eventos:
-		evt = pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos= event_pos, button=event.button)
+		evt = pygame.event.Event(pygame.MOUSEBUTTONDOWN,
+			pos = event_pos, button = event.button)
 		pygame.event.post(evt)
 
-	eventos= pygame.event.get(pygame.MOUSEMOTION)
+	eventos = pygame.event.get(pygame.MOUSEMOTION)
 	for event in eventos:
 		x, y = event.pos
-		xx= x/VA
-		yy= y/VH
-		event_pos= (xx, yy)
+		xx = x/VA
+		yy = y/VH
+		event_pos = (xx, yy)
 	for event in eventos:
-		evt = pygame.event.Event(pygame.MOUSEMOTION, pos= event_pos, rel=event.rel, buttons=event.buttons)
+		evt = pygame.event.Event(pygame.MOUSEMOTION,
+			pos = event_pos, rel = event.rel, buttons = event.buttons)
 		pygame.event.post(evt)
 
 # ---- Generales
 RESOLUCION = (1200,900)
 def get_Fondo_Inicial():
-	return pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/Pantalla-Inicio.jpg"), RESOLUCION)
+	imagen = os.path.join(IMAGENES, "Pantalla-Inicio.jpg")
+	return pygame.transform.scale(pygame.image.load(imagen), RESOLUCION)
 def get_Fondo():
-	return pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/fondo1.jpg"), (1200,900))
+	imagen = os.path.join(IMAGENES, "fondo1.jpg")
+	return pygame.transform.scale(pygame.image.load(imagen), RESOLUCION)
 def get_Flecha():
-	return (DIRECTORIO_BASE+"/Imagenes/flecha.png")
+	return os.path.join(IMAGENES, "flecha.png")
 def get_Sonidos():
-	frenada1= pygame.mixer.Sound(DIRECTORIO_BASE+"/Sonidos/frenada1.ogg")
-	aplausos1= pygame.mixer.Sound(DIRECTORIO_BASE+"/Sonidos/aplausos1.ogg")
+	sonido = os.path.join(SONIDOS, "frenada1.ogg")
+	frenada1 = pygame.mixer.Sound(sonido)
+	sonido = os.path.join(SONIDOS, "aplausos1.ogg")
+	aplausos1 = pygame.mixer.Sound(sonido)
 	return frenada1, aplausos1
 def get_ambiente():
-	ambiente= None#pygame.mixer.music.load(DIRECTORIO_BASE+"/Sonidos/ambiente.ogg")
+	ambiente = None
+	# pygame.mixer.music.load(DIRECTORIO_BASE+"/Sonidos/ambiente.ogg")
 	return ambiente
 def get_Imagen_Cartel1():
-	''' Devuelve la imagen para los carteles. '''
-	return pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/cartel1.png"), (276,145))
+	imagen = os.path.join(IMAGENES, "cartel1.png")
+	return pygame.transform.scale(pygame.image.load(imagen), (276,145))
 def get_Imagen_CartelMenu():
-	''' Devuelve la imagen para los carteles. '''
-	un= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/cartel2.png"), (250,162))
-	dos= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/cartel3.png"), (250,162))
+	imagen = os.path.join(IMAGENES, "cartel2.png")
+	un = pygame.transform.scale(pygame.image.load(imagen), (250,162))
+	imagen = os.path.join(IMAGENES, "cartel3.png")
+	dos = pygame.transform.scale(pygame.image.load(imagen), (250,162))
 	return (un, dos)
 def get_Imagen_Gruber1():
-	return pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/cebra1.png"), (250,310))
+	imagen = os.path.join(IMAGENES, "cebra1.png")
+	return pygame.transform.scale(pygame.image.load(imagen), (250,310))
 def get_Imagen_Gruber2():
-	return pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/cebra2.png"), (250,310))
+	imagen = os.path.join(IMAGENES, "cebra2.png")
+	return pygame.transform.scale(pygame.image.load(imagen), (250,310))
 def get_Imagen_Gruber3():
-	return pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/cebra3.png"), (250,310))
+	imagen = os.path.join(IMAGENES, "cebra3.png")
+	return pygame.transform.scale(pygame.image.load(imagen), (250,310))
 	
 def get_sound_clock():
-	clock1= pygame.mixer.Sound(DIRECTORIO_BASE+"/Sonidos/clock_tick1.ogg")
-	clock2= pygame.mixer.Sound(DIRECTORIO_BASE+"/Sonidos/clock_tick2.ogg")
-	clock3= pygame.mixer.Sound(DIRECTORIO_BASE+"/Sonidos/clock_tick3.ogg")
+	sonido = os.path.join(SONIDOS, "clock_tick1.ogg")
+	clock1 = pygame.mixer.Sound(sonido)
+	sonido = os.path.join(SONIDOS, "clock_tick2.ogg")
+	clock2 = pygame.mixer.Sound(sonido)
+	sonido = os.path.join(SONIDOS, "clock_tick3.ogg")
+	clock3 = pygame.mixer.Sound(sonido)
 	return [clock1, clock2, clock3]
 def get_instruc(name):
-	return pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/Instructivos/%s.jpg" % (name)), (1200,900))
+	imagen = os.path.join(IMAGENES, "Instructivos/%s.jpg" % (name))
+	return pygame.transform.scale(pygame.image.load(imagen), RESOLUCION)
 def get_Presentacion():
-	directorio= DIRECTORIO_BASE+"/Imagenes/Presentacion/"
-	imagenes= []
+	directorio = os.path.join(IMAGENES, "Presentacion")
+	imagenes = []
+	archivos = []
 	for archivo in os.listdir(directorio):
-		imagen= pygame.transform.scale(pygame.image.load(directorio + "%s" % (archivo)), (1200,900))
+		archivos.append(archivo)
+	archivos.sort()
+	for archivo in archivos:
+		img = os.path.join(directorio, "%s" % (archivo))
+		imagen = pygame.transform.scale(pygame.image.load(img), RESOLUCION)
 		imagenes.append(imagen)
 	return imagenes
+'''
 def get_cartel_presenta():
-	img1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/pandilla1.png"), (175,175))
-	img2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/pandilla2.png"), (175,175))
-	return img1, img2
+	imagen = os.path.join(IMAGENES, "pandilla1.png")
+	img1 = pygame.transform.scale(pygame.image.load(imagen), (175,175))
+	imagen = os.path.join(IMAGENES, "pandilla2.png")
+	img2 = pygame.transform.scale(pygame.image.load(imagen), (175,175))
+	return img1, img2'''
 # -------------  T0101  -------------
 # Imagenes:
 def get_Fondos_FGR_T0101():
-	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0101/fondo1.jpg"), (1200,900))
-	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0101/fondo2.jpg"), (1200,900))
+	imagen = os.path.join(IMAGENES, "FGR_T0101", "fondo1.jpg")
+	fondo1 = pygame.transform.scale(pygame.image.load(imagen), RESOLUCION)
+	imagen = os.path.join(IMAGENES, "FGR_T0101", "fondo2.jpg")
+	fondo2 = pygame.transform.scale(pygame.image.load(imagen), RESOLUCION)
 	return (fondo1, fondo2)
 
 def get_Seniales_FGR_T0101():
 	''' Devuelve las señales y sus posiciones. '''
-	seniales= {}
-	seniales["Sentido obligatorio"]= (pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/Seniales1/senial1.png"),(145,145)))
-	seniales["Curva Peligrosa"]= (pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/Seniales1/senial2.png"),(145,145)))
-	seniales["Prohibido Adelantar o Rebasar"]= (pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/Seniales1/senial3.png"),(145,145)))
-	seniales["¡Peligro! Paso a nivel sin barrera"]= (pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/Seniales1/senial4.png"),(145,145)))
-	seniales["Prohibido acceso a peatones"]= (pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/Seniales1/senial5.png"),(145,145)))
+	seniales = {}
+	imagen = os.path.join(IMAGENES, "Seniales1", "senial1.png")
+	seniales["Sentido obligatorio"] = (pygame.transform.scale(pygame.image.load(imagen),(145,145)))
+	imagen = os.path.join(IMAGENES, "Seniales1", "senial2.png")
+	seniales["Curva Peligrosa"] = (pygame.transform.scale(pygame.image.load(imagen),(145,145)))
+	imagen = os.path.join(IMAGENES, "Seniales1", "senial3.png")
+	seniales["Prohibido Adelantar o Rebasar"] = (pygame.transform.scale(pygame.image.load(imagen),(145,145)))
+	imagen = os.path.join(IMAGENES, "Seniales1", "senial4.png")
+	seniales["¡Peligro! Paso a nivel sin barrera"] = (pygame.transform.scale(pygame.image.load(imagen),(145,145)))
+	imagen = os.path.join(IMAGENES, "Seniales1", "senial5.png")
+	seniales["Prohibido acceso a peatones"] = (pygame.transform.scale(pygame.image.load(imagen),(145,145)))
 	return seniales
 def get_Posicion_Seniales_FGR_T0101():
 	return [(190,323), (395,272), (600,339), (805,269), (1010,338)]
@@ -107,11 +173,11 @@ def get_Posicion_Seniales_FGR_T0101():
 def get_Carteles_FGR_T0101():
 	''' Devuelve los textos de los carteles. '''
 	carteles= {}
-	carteles["Sentido obligatorio"]= None
-	carteles["Curva Peligrosa"]= None
-	carteles["Prohibido Adelantar o Rebasar"]= None
-	carteles["¡Peligro! Paso a nivel sin barrera"]= None
-	carteles["Prohibido acceso a peatones"]= None
+	carteles["Sentido obligatorio"] = None
+	carteles["Curva Peligrosa"] = None
+	carteles["Prohibido Adelantar o Rebasar"] = None
+	carteles["¡Peligro! Paso a nivel sin barrera"] = None
+	carteles["Prohibido acceso a peatones"] = None
 	return carteles
 def get_Posicion_Carteles_FGR_T0101():
 	''' Devuelve las posiciones de los carteles. '''
@@ -135,8 +201,8 @@ def get_Textos_FGR_T0101():
 # -------------  T0102  -------------
 # Imagenes:
 def get_Fondos_FGR_T0102():
-	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0102/fondo1.jpg"), (1200,900))
-	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0102/fondo2.jpg"), (1200,900))
+	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0102/fondo1.jpg"), RESOLUCION)
+	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0102/fondo2.jpg"), RESOLUCION)
 	return (fondo1, fondo2)
 
 def get_Seniales_FGR_T0102():
@@ -240,32 +306,27 @@ def get_Textos_FGR_T0102():
 # -------------  T0102  -------------
 
 # -------------  T0103  -------------
-# Imagenes:
 def get_Fondos_FGR_T0103():
-	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0103/fondo1.jpg"), (1200,900))
-	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0103/fondo2.jpg"), (1200,900))
+	imagen = os.path.join(IMAGENES, "FGR_T0103", "fondo1.jpg")
+	fondo1 = pygame.transform.scale(pygame.image.load(imagen), RESOLUCION)
+	imagen = os.path.join(IMAGENES, "FGR_T0103", "fondo2.jpg")
+	fondo2 = pygame.transform.scale(pygame.image.load(imagen), RESOLUCION)
 	return (fondo1, fondo2)
 
-# Textos:
-INTRO_FGR_T0103= ''' . . . . . . . . . '''
-def get_Textos_FGR_T0103():
-	textos= []
-	for linea in INTRO_FGR_T0103.split("\n"):
-		textos.append(linea)
-	return textos
-
-def get_frases_FGR_T0103():
-	return {"Sólo cruzamos cuando el semáforo está en verde de forma fija.": True,
-		"Estamos atentos a las señales de tránsito posicionadas en un palo vertical, y también a las marcas viales, las señales, pintadas sobre el pavimento o calzada.":False, "Cumplimos siempre las indicaciones que nos comunican las señales de tránsito. Somos conscientes de que cumplirlas es muy importante.": True, "Cuando vemos una señal de peligro, extremamos la prudencia.": True, "Jamás cruzamos la calle con semáforo en rojo, aunque no circulen vehículos por la calzada.": True, "Si circulamos en bicicleta y vemos un stop, lo respetamos": False, "Si una calle es peatonal (porque así lo indica una señal de tránsito), hacemos caso a la señal y no circulamos por ella en bicicleta.": False, "Si vamos en bicicleta y vemos una señal de peligro o prevención, que indica que por donde estamos circulando suelen haber niños y niñas, extremamos las precauciones.": True, "Si vemos a un amigo o amiga no cumplir la indicación de una señal de tráfico, le explicamos que si todo el mundo respeta las señales de tránsito se evitanrían la mayor parte de los accidentes de circulación.": False, "Sólo cruzamos la calle por el paso o senda peatonal, aunque el semáforo esté en verde.": True}
-
+def get_seniales_FGR_T0103():
+	return	[(os.path.join(IMAGENES, "Seniales2", "Circulacion Bicicletas.png"), "Circulacion Bicicletas", "Peligro"),
+	(os.path.join(IMAGENES, "Seniales2", "No Adelantar.png"), "No Adelantar", "Prohibición"),
+	(os.path.join(IMAGENES, "Seniales2", "Hospital.png"), "Hospital", "Información"),
+	(os.path.join(IMAGENES, "Seniales2", "Pare.png"), "Pare", "Prioridad"),
+	(os.path.join(IMAGENES, "Seniales2", "Sentido Obligacion.png"), "Sentido Obligacion", "Obligación"),
+	(os.path.join(IMAGENES, "Seniales2", "Paso a Nivel.png"), "Paso a Nivel", "Peligro")]
 # -------------  T0103  -------------
-
 
 # -------------  T0201  -------------
 # Imagenes:
 def get_Fondos_FGR_T0201():
-	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0201/fondo1.jpg"), (1200,900))
-	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0201/fondo2.jpg"), (1200,900))
+	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0201/fondo1.jpg"), RESOLUCION)
+	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0201/fondo2.jpg"), RESOLUCION)
 	return (fondo1,fondo2)
 
 def get_Imagenes_FGR_T0201():
@@ -311,8 +372,8 @@ def get_Posicion_Palabras_FGR_T0201():
 # -------------  T0202  -------------
 # Imagenes:
 def get_Fondos_FGR_T0202():
-	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0202/fondo1.jpg"), (1200,900))
-	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0202/fondo2.jpg"), (1200,900))
+	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0202/fondo1.jpg"), RESOLUCION)
+	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0202/fondo2.jpg"), RESOLUCION)
 	return (fondo1,fondo2)
 
 def get_afirmaciones_FGR_T0202():
@@ -368,8 +429,8 @@ def get_Textos_FGR_T0202():
 # -------------  T0301  -------------
 # Imagenes:
 def get_Fondos_FGR_T0301():
-	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0301/fondo1.jpg"), (1200,900))
-	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0301/fondo2.jpg"), (1200,900))
+	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0301/fondo1.jpg"), RESOLUCION)
+	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0301/fondo2.jpg"), RESOLUCION)
 	return (fondo1,fondo2)
 
 def get_personajes_FGR_T0301():
@@ -397,8 +458,8 @@ def get_Textos_FGR_T0301():
 # -------------  T0302  -------------
 # Imagenes:
 def get_Fondos_FGR_T0302():
-	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0302/fondo1.jpg"), (1200,900))
-	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0302/fondo2.jpg"), (1200,900))
+	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0302/fondo1.jpg"), RESOLUCION)
+	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0302/fondo2.jpg"), RESOLUCION)
 	return (fondo1,fondo2)
 
 # Textos:
@@ -478,8 +539,8 @@ def get_afirmaciones_FGR_T0302():
 # -------------  T0401  -------------
 # Imagenes:
 def get_Fondos_FGR_T0401():
-	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0401/fondo1.jpg"), (1200,900))
-	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0401/fondo2.jpg"), (1200,900))
+	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0401/fondo1.jpg"), RESOLUCION)
+	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0401/fondo2.jpg"), RESOLUCION)
 	return (fondo1,fondo2)
 
 # Textos:
@@ -558,8 +619,8 @@ def get_afirmaciones_FGR_T0401():
 # -------------  T0501  -------------
 # Imagenes:
 def get_Fondos_FGR_T0501():
-	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0501/fondo1.jpg"), (1200,900))
-	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0501/fondo2.jpg"), (1200,900))
+	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0501/fondo1.jpg"), RESOLUCION)
+	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0501/fondo2.jpg"), RESOLUCION)
 	return (fondo1,fondo2)
 
 # Textos:
@@ -627,8 +688,8 @@ def get_afirmaciones_FGR_T0501():
 # -------------  T0303  -------------
 # Imagenes:
 def get_Fondos_FGR_T0303():
-	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0303/fondo1.jpg"), (1200,900))
-	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0303/fondo2.jpg"), (1200,900))
+	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0303/fondo1.jpg"), RESOLUCION)
+	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0303/fondo2.jpg"), RESOLUCION)
 	return (fondo1,fondo2)
 
 # Textos:
@@ -668,8 +729,8 @@ def get_afirmaciones_FGR_T0303():
 # -------------  T0402  -------------
 # Imagenes:
 def get_Fondos_FGR_T0402():
-	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0402/fondo1.jpg"), (1200,900))
-	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0402/fondo2.jpg"), (1200,900))
+	fondo1= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0402/fondo1.jpg"), RESOLUCION)
+	fondo2= pygame.transform.scale(pygame.image.load(DIRECTORIO_BASE+"/Imagenes/FGR_T0402/fondo2.jpg"), RESOLUCION)
 	return (fondo1,fondo2)
 
 # Textos:
@@ -708,3 +769,232 @@ def get_afirmaciones_FGR_T0402():
 	]
 	return afirmaciones
 # -------------  T0402  -------------
+
+# -------------  T0502  -------------
+def get_letras_FGR_T0502():
+	return [
+	["C","E","L","U","L","A","R", False, False, False, False],
+	["H", False, False, False, False, False, False, False, False, False, False],
+	["A", "T", "R", "A", "S", False, False, False, False, "B", False],
+	["L", False, False, False, False, False, False, False, False, "O", False],
+	["E", False, False, False, False, "M", "U", "S", "I", "C", "A"],
+	["C", "O", "D", "E", "R", "A", False, "R", False, "I", False],
+	["O", False, False, False, False, "T", False, "I", False, "N", False],
+	[False, False, False, False, False, "E", False, False, False, "A", False]]
+def get_Fondos_FGR_T0502():
+	imagen = os.path.join(IMAGENES, "FGR_T0502", "fondo1.jpg")
+	fondo1 = pygame.transform.scale(pygame.image.load(imagen), RESOLUCION)
+	imagen = os.path.join(IMAGENES, "FGR_T0502", "fondo2.jpg")
+	fondo2 = pygame.transform.scale(pygame.image.load(imagen), RESOLUCION)
+	return (fondo1, fondo2)
+def get_Texto_FGR_T0502():
+	return [
+	"1- Papá y mamá lo usan cuando cae el sol para",
+	"  ir en moto o caminar por la ruta.",
+	"2- Cuando vamos de paseo, mamá y papá nunca",
+	"  lo olvidan, pero en el auto, no lo usan JAMÁS!",
+	"3- Cuando salimos a pasear en el auto",
+	"  siempre vamos . . . y con nuestro -7-.",
+	"4- Me las pongo cuando uso la bicicleta",
+	"  los patines y el skate.",
+	"5- Siempre que salimos a pasear mis padres lo",
+	"  preparan, pero en el auto JAMÁS lo prueban.",
+	"6- Me encanta que la . . . esté alta, pero para",
+	"  evitar distracciones, en el auto",
+	"  papá la lleva bajita.",
+	"7- Siempre que voy en auto, viajo -3- y",
+	"  utilizando mi . . .",
+	"8- En el auto y en mi bicicleta, debo",
+	"  asegurarme que funcione correctamente la . . ."]
+# -------------  T0502  -------------
+
+# -------------  T0204  -------------
+def get_letras_FGR_T0204(): # 11
+	return [
+	[False,False,False,False,False,False,False,False,False,"F","I","L","A"],
+	[False,False,False,False,False,False,False,False,False,False,False,False,"C"],
+	[False,False,False,False,False,False,"C",False,"B","O","R","D","E"],
+	[False,False,False,False,False,False,"R",False,"A",False,False,False,"R"],
+	[False,False,False,"E","S","Q","U","I","N","A",False,False,"A"],
+	[False,False,False,False,False,False,"Z",False,"Q",False,False,False,False],
+	["O","P","U","E","S","T","A",False,"U",False,False,False,False],
+	[False,False,False,False,False,False,"R",False,"I",False,False,False,False],
+	[False,False,False,False,False,False,False,False,"N",False,False,False,False],
+	[False,False,False,False,False,False,"P","E","A","T","O","N",False]]
+def get_Fondos_FGR_T0204():
+	imagen = os.path.join(IMAGENES, "FGR_T0204", "fondo1.jpg")
+	fondo1 = pygame.transform.scale(pygame.image.load(imagen), RESOLUCION)
+	imagen = os.path.join(IMAGENES, "FGR_T0204", "fondo2.jpg")
+	fondo2 = pygame.transform.scale(pygame.image.load(imagen), RESOLUCION)
+	return (fondo1, fondo2)
+def get_Texto_FGR_T0204():
+	return [
+	"1- Al cruzar, siempre lo hago en la . . .",
+	"2- Al caminar por la carretera,",
+	"  siempre lo hago en dirección -4-",
+	"  al sentido de los autos y por la . . .",
+	"3- Nunca debo . . . entre dos vehículos",
+	"  estacionados.",
+	"4- Al caminar por la carretera,",
+	"  siempre lo hago en dirección . . . al",
+	"  sentido de los autos.",
+	"5- Al caminar por la -6-,",
+	"  nunca lo hago por el . . .",
+	"6- Cuando soy -8- y voy por la",
+	"  ciudad, camino por la . . .",
+	"7- Al caminar por la carretera en grupo,",
+	"  me desplazo en . . .",
+	"8- Cualquier persona que circula",
+	"  a pie es un . . ."]
+# -------------  T0204  -------------
+
+class Controles(pygame.sprite.OrderedUpdates):
+	def __init__(self, main):
+		pygame.sprite.OrderedUpdates.__init__(self)
+		self.main = main
+		self.flecha = None
+		self.titulo = None
+		self.puntaje = None
+		self.cronometro = None
+		self.progress_reloj = None
+		self.sonidos_reloj = None
+		self.user = None
+
+		self.load_sprites()
+
+	def load_sprites(self):
+		imagen = self.main.usuario['personaje']
+		self.user = JAMButton(self.main.usuario['nombre'],None)
+		self.user.set_imagen(origen = imagen, tamanio = (60,60))
+		self.user.set_colores(colorbas = (0,153,255,255),
+			colorbor = (0,153,255,255), colorcara = (0,153,255,255))
+		self.user.set_tamanios(tamanio = (80,80), grosorbor = 1, detalle = 1, espesor = 1)
+		ww, hh = self.user.get_tamanio()
+		w,h = RESOLUCION
+		self.user.set_posicion(punto = (w - ww - 10, 25))
+		self.user.connect(callback = None, sonido_select = None)
+		self.add(self.user)
+
+		imagen= get_Flecha()
+		self.flecha= JAMButton("",None)
+		self.flecha.set_imagen(origen= imagen, tamanio=(100,55))
+		self.flecha.set_colores(colorbas=JAMG.get_negro(), colorcara=JAMG.get_negro())
+		self.flecha.set_tamanios(tamanio=(0,0), grosorbor=1, detalle=1, espesor=1)
+		self.flecha.set_posicion(punto= (10,10))
+		self.flecha.connect (callback= self.main.run_dialog_game)
+		self.add(self.flecha)
+
+		x,y= self.flecha.posicion
+		w,h= self.flecha.get_tamanio()
+		x+= w
+		ancho= RESOLUCION[0]/2 - x
+		cartel_titulo= pygame.sprite.Sprite()
+		cartel_titulo.image= get_Imagen_Cartel1()
+		cartel_titulo.image= pygame.transform.scale(cartel_titulo.image.copy(), (ancho,cartel_titulo.image.get_size()[1]))
+		cartel_titulo.rect= cartel_titulo.image.get_rect()
+		cartel_titulo.rect.x= x
+		cartel_titulo.rect.y= -60
+		self.add(cartel_titulo)
+
+		self.titulo= JAMLabel(self.main.nombre)
+		self.titulo.set_text(color=JAMG.get_blanco())
+		fuente, tamanio= JAMG.get_Font_fawn()
+		self.titulo.set_font_from_file(fuente, tamanio= 40)
+		w,h= RESOLUCION
+		x,y= (cartel_titulo.rect.x + 50, 10)
+		self.titulo.set_posicion(punto= (x,y))
+		self.add(self.titulo)
+
+		self.puntaje= JAMLabel("%s" %(self.main.puntos))
+		self.puntaje.set_text(color=JAMG.get_blanco())
+		fuente, tamanio= JAMG.get_Font_fawn()
+		self.puntaje.set_font_from_file(fuente, tamanio= 40)
+		w,h= RESOLUCION
+		self.add(self.puntaje)
+
+		self.sonidos_reloj= get_sound_clock()
+
+		from BiblioJAM.JAMCron import JAMCron
+		self.cronometro= JAMCron()
+		x,y= (0-self.cronometro.cron.rect.w-1, 0-self.cronometro.cron.rect.h-1)
+		self.cronometro.cron.set_posicion(punto= (x,y))
+		self.cronometro.set_callback(self.main.game_over)
+		self.cronometro.set_alarma(tiempo = (1,30), duracion = 3)
+		self.add(self.cronometro)
+
+		self.progress_reloj= ProgressBar(self.main)
+		self.add(self.progress_reloj)
+
+	def actualiza_puntos(self):
+		puntos = "%s" %(self.main.puntos)
+		self.puntaje.set_text(texto= puntos)
+		x,y = self.user.get_posicion()
+		w,h = self.puntaje.get_tamanio()
+		x -= w+10
+		self.puntaje.set_posicion(punto= (x,y))
+
+	def switching_game(self, button):
+		self.main.estado= "Intro"
+		return self.main.run()
+
+	def init(self):
+		sound= self.sonidos_reloj[0]
+		self.cronometro.set_sound(sound)
+		self.cronometro.reset()
+		self.actualiza_puntos()
+		self.cronometro.play()
+	def stop(self):
+		self.cronometro.pause()
+	def play(self):
+		self.cronometro.play()
+
+class ProgressBar(pygame.sprite.Sprite):
+	def __init__(self, main):
+		pygame.sprite.Sprite.__init__(self)
+		self.main = main
+		self.acumula = 0
+		w,h = RESOLUCION
+		self.tamanio = (w/2-10,10)
+		self.posicion = (w/2,10)
+		rect1 = JAMG.get_Rectangulo( JAMG.get_verde1(), self.tamanio)
+		w,y = rect1.get_size()
+		a = w/6*3
+		rect2 = JAMG.get_Rectangulo( JAMG.get_amarillo1(), (a,self.tamanio[1]))
+		imagen = JAMG.pegar_imagenes_alineado_derecha(rect2, rect1)
+		a = w/6
+		rect3 = JAMG.get_Rectangulo( JAMG.get_rojo1(), (a,self.tamanio[1]))
+		self.imagen_original = JAMG.pegar_imagenes_alineado_derecha(rect3, imagen)
+		self.image = self.imagen_original.copy()
+		self.rect = self.image.get_rect()
+		self.rect.x, self.rect.y= self.posicion
+
+	def update(self):
+		tiempo = self.main.controles.cronometro.cron.segundos_final
+		transcurridos = self.main.controles.cronometro.get_tiempo_transcurrido()
+		faltan = self.main.controles.cronometro.cron.segundos_faltan
+		mitad = tiempo/2
+		cuarto = tiempo/4
+		if faltan <= mitad:
+			if faltan > cuarto:
+				if not self.main.controles.cronometro.sonido == self.main.controles.sonidos_reloj[1]:
+					self.main.controles.stop()
+					self.main.controles.cronometro.set_sound(self.main.controles.sonidos_reloj[1])
+					self.main.controles.play()
+			elif faltan <= cuarto:
+				if not self.main.controles.cronometro.sonido == self.main.controles.sonidos_reloj[2]:
+					self.main.controles.stop()
+					self.main.controles.cronometro.set_sound(self.main.controles.sonidos_reloj[2])
+					self.main.controles.play()
+		ancho, alto = self.tamanio
+		ind = float(float(ancho)/float(self.main.controles.cronometro.cron.segundos_final))
+		ancho = float(float(ancho)- float(self.main.controles.cronometro.get_tiempo_transcurrido())*ind)
+		dif = float(float(self.tamanio[0]) - float(ancho))
+		try:
+			self.image = self.imagen_original.copy().subsurface((dif,0,int(ancho), int(alto)))
+		except:
+			self.image = self.imagen_original.copy().subsurface((dif,0,0,0))
+		self.rect = self.image.get_rect()
+		x,y = self.posicion
+		x += dif
+		self.rect.x, self.rect.y = (x,y)
+

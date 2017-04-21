@@ -25,7 +25,7 @@ class JAMLabel(pygame.sprite.Sprite):
 
 		self.imagen = {"origen": None, "tamanio": None}
 		self.texto = {"tipo": pygame.font.get_default_font(), "tamanio": 20, "color": VG.get_negro(), "texto": texto}
-		self.font_from_file= None # Agregado 15-06-2011 - Para cargar un tipo de letra desde un archivo.(os.getcwd()+"/Fuentes/fawn.ttf", 43)
+		self.font_from_file= None
 		self.base = {"tamanio": None, "color": None}
 		self.borde = {"grosor": None, "color": None}
 		self.contenedor = {"base": self.base, "borde": self.borde}

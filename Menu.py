@@ -6,48 +6,39 @@
 #   https://sites.google.com/site/sugaractivities/
 #   http://codigosdeejemplo.blogspot.com/
 
-import pygame, gc, sys, random, gtk, pygtk
+import pygame
+import os
+import gc
+import sys
+import random
+import gtk
+import gobject
 from pygame.locals import *
-
 import Globals as G
 gc.enable()
-
 import BiblioJAM
 from BiblioJAM.JAMButton import JAMButton
 import BiblioJAM.JAMGlobals as JAMG
 
-class Menu():
-	def __init__(self):
+class Menu(gtk.Widget):
+	__gsignals__ = {"run_grupo":(gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_STRING,)),
+	"back":(gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, [])}
+	def __init__(self, usuario):
+		gtk.Widget.__init__(self)
+		self.usuario = usuario
 		self.ventana = None
-		self.name= "Derecho a Transitar"
-		self.estado= False
+		self.estado = False
+		self.fondo = None
+		self.reloj = None
+		self.botonesmenu = None
+		self.ventana_real = None
+		self.resolucionreal = None
+		self.VA = None
+		self.VH = None
+		self.load()
+		self.estado = "Intro"
 
-		# Variables del Juego
-		self.fondo= None
-		self.reloj= None
-
-		# Sprites
-		self.botonesmenu= None
-		self.game= None
-
-		# Escalado
-		self.ventana_real= None
-		self.resolucionreal= None
-		self.VA= None
-		self.VH= None
-
-		self.preset()
-
-		from BiblioJAM.JAMatrix import JAMatrix
-		matrix= JAMatrix(self, self.ventana_real, self.resolucionreal)
-		matrix.set_imagen_matrix(None)
-		matrix.carga_game()
-
-		self.estado= "Intro"
-		self.switch()
-
-	def run_menu(self):
-		''' loop del menú. '''
+	def run(self):
 		self.ventana.blit(self.fondo, (0,0))
 		self.botonesmenu.draw(self.ventana)
 		pygame.display.update()
@@ -61,11 +52,12 @@ class Menu():
 			self.handle_event_Intro()
 			pygame.event.clear()
 			self.botonesmenu.draw(self.ventana)
-			self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
+			self.ventana_real.blit(pygame.transform.scale(self.ventana,
+				self.resolucionreal), (0,0))
 			pygame.display.update()
 
 	def presentacion(self, button):
-		presentacion= Presentacion(self)
+		presentacion = Presentacion(self)
 		self.ventana.blit(self.fondo, (0,0))
 		presentacion.draw(self.ventana)
 		pygame.display.update()
@@ -78,391 +70,253 @@ class Menu():
 			presentacion.update()
 			pygame.event.clear()
 			presentacion.draw(self.ventana)
-			self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
+			self.ventana_real.blit(pygame.transform.scale(self.ventana,
+				self.resolucionreal), (0,0))
 			pygame.display.update()
-
-		self.fondo= G.get_Fondo()
+		imagen = os.path.join(G.IMAGENES, "Login", "fondo.jpg")
+		self.fondo = pygame.transform.scale(pygame.image.load(imagen),
+			G.RESOLUCION)
 		self.ventana.blit(self.fondo, (0,0))
 		self.botonesmenu.draw(self.ventana)
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
+		self.ventana_real.blit(pygame.transform.scale(self.ventana,
+			self.resolucionreal), (0,0))
 		pygame.display.update()
 
 	def update(self):
 		self.ventana.blit(self.fondo, (0,0))
 		self.botonesmenu.draw(self.ventana)
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
+		self.ventana_real.blit(pygame.transform.scale(self.ventana,
+			self.resolucionreal), (0,0))
 		pygame.display.update()
 
-	def run_T0101(self, jambutton):
-		self.ventana.blit(self.fondo, (0,0))
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-		from FGR_T0101 import FGR_T0101
-		juego= FGR_T0101(self)
-		juego.run()
-		self.update()
-		if juego.estado: self.run_T0102(None)
+	def emit_volver(self, button=None):
+		self.estado = None
+		self.emit("back")
 
-	def run_T0102(self, jambutton):
-		self.ventana.blit(self.fondo, (0,0))
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-		from FGR_T0102 import FGR_T0102
-		juego= FGR_T0102(self)
-		juego.run()
-		self.update()
-		#if juego.estado: self.run_T0103(None)
+	def run_grupo1(self, jambutton):
+		self.estado = None
+		self.emit("run_grupo", "grupo1")
+	def run_grupo2(self, jambutton):
+		self.estado = None
+		self.emit("run_grupo", "grupo2")
+	def run_grupo3(self, jambutton):
+		self.estado = None
+		self.emit("run_grupo", "grupo3")
+	def run_grupo4(self, jambutton):
+		self.estado = None
+		self.emit("run_grupo", "grupo4")
+	def run_grupo5(self, jambutton):
+		self.estado = None
+		self.emit("run_grupo", "grupo5")
 
-	'''
-	def run_T0103(self, jambutton):
-		self.ventana.blit(self.fondo, (0,0))
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-		from FGR_T0103 import FGR_T0103
-		return FGR_T0103(self)'''
-
-	def run_T0201(self, jambutton):
-		self.ventana.blit(self.fondo, (0,0))
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-		from FGR_T0201 import FGR_T0201
-		juego= FGR_T0201(self)
-		juego.run()
-		self.update()
-		if juego.estado: self.run_T0202(None)
-
-	def run_T0202(self, jambutton):
-		self.ventana.blit(self.fondo, (0,0))
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-		from FGR_T0202 import FGR_T0202
-		juego= FGR_T0202(self)
-		juego.run()
-		self.update()
-		#if juego.estado: self.run_T0102(None)
-
-	def run_T0301(self, jambutton):
-		self.ventana.blit(self.fondo, (0,0))
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-		from FGR_T0301 import FGR_T0301
-		juego= FGR_T0301(self)
-		juego.run()
-		self.update()
-		if juego.estado: self.run_T0302(None)
-	
-	def run_T0302(self, jambutton):
-		self.ventana.blit(self.fondo, (0,0))
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-		from FGR_T0302 import FGR_T0302
-		juego= FGR_T0302(self)
-		juego.run()
-		self.update()
-		if juego.estado: self.run_T0303(None)
-
-	def run_T0303(self, jambutton):
-		self.ventana.blit(self.fondo, (0,0))
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-		from FGR_T0303 import FGR_T0303
-		juego= FGR_T0303(self)
-		juego.run()
-		self.update()
-		#if juego.estado: self.run_T0102(None)
-
-	def run_T0401(self, jambutton):
-		self.ventana.blit(self.fondo, (0,0))
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-		from FGR_T0401 import FGR_T0401
-		juego= FGR_T0401(self)
-		juego.run()
-		self.update()
-		if juego.estado: self.run_T0402(None)
-
-	def run_T0402(self, jambutton):
-		self.ventana.blit(self.fondo, (0,0))
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-		from FGR_T0402 import FGR_T0402
-		juego= FGR_T0402(self)
-		juego.run()
-		self.update()
-		#if juego.estado: self.run_T0403(None)
-
-	def run_T0501(self, jambutton):
-		self.ventana.blit(self.fondo, (0,0))
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-		from FGR_T0501 import FGR_T0501
-		juego= FGR_T0501(self)
-		juego.run()
-		self.update()
-		#if juego.estado: self.run_T0102(None)
-
-	def switch(self):
-		if self.estado== "Intro":
-			self.set_event_intro()
-			return self.run_menu()
-	
 	def handle_event_Intro(self):
 		for event in pygame.event.get(pygame.KEYDOWN):
-			tecla= event.key
-			if tecla== pygame.K_ESCAPE:
+			tecla = event.key
+			if tecla == pygame.K_ESCAPE:
 				pygame.event.clear()
-				self.run_dialog_intro(None)
-
-	def preset(self):
-		A, B= G.RESOLUCION
-		self.ventana = pygame.Surface( (A, B), flags=HWSURFACE )
-		self.ventana_real= pygame.display.get_surface()
-		C= pygame.display.Info().current_w
-		D= pygame.display.Info().current_h
-		self.resolucionreal= (C,D)
-		self.VA= float(C)/float(A)
-		self.VH= float(D)/float(B)
+				self.emit_volver(None)
 
 	def load(self):
-		self.fondo= G.get_Fondo()
-		self.botonesmenu= ButtonsMenu(self)
+		A, B = G.RESOLUCION
+		self.ventana = pygame.Surface( (A, B), flags=HWSURFACE )
+		self.ventana_real = pygame.display.get_surface()
+		C = pygame.display.Info().current_w
+		D = pygame.display.Info().current_h
+		self.resolucionreal = (C,D)
+		self.VA = float(C)/float(A)
+		self.VH = float(D)/float(B)
+		imagen = os.path.join(G.IMAGENES, "Login", "fondo.jpg")
+		self.fondo = pygame.transform.scale(pygame.image.load(imagen), G.RESOLUCION)
+		self.botonesmenu = ButtonsMenu(self)
 		self.reloj = pygame.time.Clock()
-		self.estado= True
-	
-	def set_event_intro(self):
-		pygame.event.set_blocked([JOYAXISMOTION, JOYBALLMOTION, JOYHATMOTION, JOYBUTTONUP, JOYBUTTONDOWN,KEYUP, USEREVENT])
-		pygame.event.set_allowed([MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN, KEYDOWN, VIDEORESIZE, VIDEOEXPOSE, QUIT, ACTIVEEVENT])
+		pygame.event.set_blocked([JOYAXISMOTION, JOYBALLMOTION, JOYHATMOTION,
+			JOYBUTTONUP, JOYBUTTONDOWN,KEYUP, USEREVENT])
+		pygame.event.set_allowed([MOUSEMOTION, MOUSEBUTTONUP, MOUSEBUTTONDOWN,
+			KEYDOWN, VIDEORESIZE, VIDEOEXPOSE, QUIT, ACTIVEEVENT])
 		pygame.mouse.set_visible(True)
 
-	def run_dialog_intro(self, button):
-		from BiblioJAM.JAMDialog import JAMDialog
-		dialog= JAMDialog(mensaje="¿Abandonas el Juego?", funcion_ok=self.ok_intro, funcion_cancel=self.cancel_intro)
-		fuente, tamanio= JAMG.get_Font_fawn()
-		dialog.set_font_from_file(fuente, tamanio= 40)
-		dialog.boton_aceptar.set_font_from_file(fuente, tamanio= 25)
-		dialog.boton_cancelar.set_font_from_file(fuente, tamanio= 25)
-		a,b,c= JAMG.get_estilo_papel_quemado()
-		dialog.set_colors_dialog(base=c, bordes=c)
-		dialog.set_colors_buttons(colorbas=a, colorbor=b, colorcara=c) 
-		self.estado= "Dialog"
-		dialog.draw(self.ventana)
-		pygame.display.update()
-		while self.estado== "Dialog":
-			self.reloj.tick(35)
-			while gtk.events_pending():
-			    	gtk.main_iteration(False)
-			G.Traduce_posiciones(self.VA, self.VH)
-			dialog.clear(self.ventana, self.fondo)
-			dialog.update()
-			pygame.event.clear()
-			dialog.draw(self.ventana)
-			self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-			pygame.display.update()
-
-		dialog.clear(self.ventana, self.fondo)
-		self.ventana_real.blit(pygame.transform.scale(self.ventana, self.resolucionreal), (0,0))
-		pygame.display.update()
-
 	def ok_intro(self, button):
-		return self.salir()
+		return self.emit_volver()
 	def cancel_intro(self, button):
-		self.estado= "Intro"
-
-	def salir(self):
-		pygame.quit()
-		sys.exit()
+		self.estado = "Intro"
 
 class ButtonsMenu(pygame.sprite.OrderedUpdates):
 	def __init__(self, main):
+		self.main = main
 		pygame.sprite.OrderedUpdates.__init__(self)
-		imagen= G.get_Flecha()
-
-		salir= JAMButton("",None)
-		salir.set_imagen(origen= imagen, tamanio=(100,55))
-		salir.set_colores(colorbas=JAMG.get_negro(), colorcara=JAMG.get_negro())
-		salir.set_tamanios(tamanio=(0,0), grosorbor=1, detalle=1, espesor=1)
-		salir.set_posicion(punto= (10,10))
-		salir.connect (callback= main.run_dialog_intro)
+		imagen = G.get_Flecha()
+		salir = JAMButton("",None)
+		salir.set_imagen(origen = imagen, tamanio = (100,55))
+		salir.set_colores(colorbas = JAMG.get_negro(), colorcara = JAMG.get_negro())
+		salir.set_tamanios(tamanio = (0,0), grosorbor = 1, detalle = 1, espesor = 1)
+		salir.set_posicion(punto = (10,10))
+		salir.connect(callback = self.main.emit_volver, sonido_select = None)
 		self.add(salir)
 
-		imagen_cartel_unselect, imagen_cartel_select= G.get_Imagen_CartelMenu()
+		imagen = main.usuario['personaje']
+		user = JAMButton(main.usuario['nombre'],None)
+		user.set_imagen(origen = imagen, tamanio = (60,60))
+		user.set_colores(colorbas = (0,153,255,255),
+			colorbor = (0,153,255,255), colorcara = (0,153,255,255))
+		user.set_tamanios(tamanio = (80,80), grosorbor = 1, detalle = 1, espesor = 1)
+		ww, hh = user.get_tamanio()
+		w,h = G.RESOLUCION
+		user.set_posicion(punto = (w - ww - 10,10))
+		user.connect(callback = None, sonido_select = None)
+		self.add(user)
 
-		uno= Cartel(imagen_cartel_unselect.copy(), imagen_cartel_select.copy(), "Señales de Tránsito")
-		uno.connect(callback= main.run_T0101)
-		uno.rect.x, uno.rect.y= (50, 100)
+		uno = BotonGrupo()
+		uno.set_tamanios(tamanio = (0,0), grosorbor = 1, detalle = 1, espesor = 1)
+		imagen = os.path.join(G.IMAGENES, "Menu", "img1.png")
+		uno.set_imagen(origen = imagen)
+		uno.connect(callback = main.run_grupo1, sonido_select = None)
 		self.add(uno)
 
-		dos= Cartel(imagen_cartel_unselect.copy(), imagen_cartel_select.copy(), "Caminando a la Escuela")
-		dos.connect(callback= main.run_T0201)
-		dos.rect.x, dos.rect.y= (200, 270)
+		dos = BotonGrupo()
+		dos.set_tamanios(tamanio = (0,0), grosorbor = 1, detalle = 1, espesor = 1)
+		imagen = os.path.join(G.IMAGENES, "Menu", "img2.png")
+		dos.set_imagen(origen = imagen)
+		dos.connect(callback = main.run_grupo2, sonido_select = None)
 		self.add(dos)
 
-		tres= Cartel(imagen_cartel_unselect.copy(), imagen_cartel_select.copy(), "Seré Conductor")
-		tres.connect(callback= main.run_T0301)
-		tres.rect.x, tres.rect.y= (380, 180)
+		tres = BotonGrupo()
+		tres.set_tamanios(tamanio = (0,0), grosorbor = 1, detalle = 1, espesor = 1)
+		imagen = os.path.join(G.IMAGENES, "Menu", "img3.png")
+		tres.set_imagen(origen = imagen)
+		tres.connect(callback = main.run_grupo3, sonido_select = None)
 		self.add(tres)
 
-		cuatro= Cartel(imagen_cartel_unselect.copy(), imagen_cartel_select.copy(), "Niñas y niños pasajeros!")
-		cuatro.connect(callback= main.run_T0401)
-		cuatro.rect.x, cuatro.rect.y= (900, 200)
+		cuatro = BotonGrupo()
+		cuatro.set_tamanios(tamanio = (0,0), grosorbor = 1, detalle = 1, espesor = 1)
+		imagen = os.path.join(G.IMAGENES, "Menu", "img4.png")
+		cuatro.set_imagen(origen = imagen)
+		cuatro.connect(callback = main.run_grupo4, sonido_select = None)
 		self.add(cuatro)
 
-		cinco= Cartel(imagen_cartel_unselect.copy(), imagen_cartel_select.copy(), "Paseando en Familia")
-		cinco.connect(callback= main.run_T0501)
-		cinco.rect.x, cinco.rect.y= (650, 120)
+		cinco = BotonGrupo()
+		cinco.set_tamanios(tamanio = (0,0), grosorbor = 1, detalle = 1, espesor = 1)
+		imagen = os.path.join(G.IMAGENES, "Menu", "img5.png")
+		cinco.set_imagen(origen = imagen)
+		cinco.connect(callback = main.run_grupo5, sonido_select = None)
 		self.add(cinco)
 
-		presenta1, presenta2= G.get_cartel_presenta()
-		w,h= G.RESOLUCION
-		presenta= Cartel(presenta1, presenta2, "")
-		presenta.connect(callback= main.presentacion)
-		ww,hh= (presenta.rect.w, presenta.rect.h)
-		presenta.rect.x, presenta.rect.y= (w-ww, h-hh)
+		presenta = BotonPresentacion()
+		presenta.connect(callback = main.presentacion, sonido_select = None)
 		self.add(presenta)
 
-class Cartel(pygame.sprite.Sprite):
-	def __init__(self, imagen_cartel_unselect, imagen_cartel_select, texto):
-		pygame.sprite.Sprite.__init__(self)
-		labels= self.get_labels(texto)
-		self.final_unselect, self.final_select= (imagen_cartel_unselect, imagen_cartel_select)
-		self.bliting_labels(self.final_unselect, labels)
-		self.bliting_labels(self.final_select, labels)
-		self.image= self.final_unselect
-		self.rect= self.image.get_rect()
-		self.select= False
-		self.callback= False
+		sep = 50
+		w,h = G.RESOLUCION
+		ww, hh = dos.get_tamanio()
+		dos.set_posicion( (w/2-ww/2, h/2 - hh) )
+		x, y = dos.get_posicion()
+		tres.set_posicion( (x + ww + sep, y) )
+		uno.set_posicion( (x - ww - sep, y) )
 
-	def get_labels(self, texto):
-		from BiblioJAM.JAMLabel import JAMLabel
-		labels= []
-		for text in texto.split("\n"):
-			label= JAMLabel(text)
-			label.set_text(color=JAMG.get_azul1())
-			fuente, tamanio= JAMG.get_Font_fawn()
-			label.set_font_from_file(fuente, tamanio= 30)
-			labels.append(label)
-		return labels
+		cuatro.set_posicion( ((w/2 - ww) - sep, y + hh + sep) )
+		cinco.set_posicion( (w/2 + sep, y + hh + sep) )
 
-	def bliting_labels(self, imagen, labels):
-		x,y,w,h= imagen.get_rect()
-		y+= 10
-		for label in labels:
-			w1,h1= label.get_tamanio()
-			imagen.blit(label.image, (w/2-w1/2, y))
-			y+= h1
+		ww,hh = presenta.get_tamanio()
+		presenta.set_posicion( (w-ww-10, h-hh-10) )
 
-	def connect(self, callback=None):
-		self.callback= callback
+class BotonGrupo(JAMButton):
+	def __init__(self):
+		JAMButton.__init__(self, '', None)
+	def set_imagen(self, origen):
+		imagen = pygame.image.load(origen)
+		self.final_unselect = imagen
+		self.final_select = JAMG.get_my_surface_whit_border(imagen.copy(),
+			(255,255,255,255), 10)
+		self.image = self.final_unselect
+		self.rect = self.image.get_rect()
 
-	def update(self):	
-		eventos_republicar= []
-		eventos= pygame.event.get(pygame.MOUSEBUTTONDOWN)
-		for event in eventos:
-			posicion = event.pos
-			if self.rect.collidepoint(posicion):
-				punto= (int(posicion[0]-self.rect.x), int(posicion[1]-self.rect.y))
-				color= self.image.get_at( punto )
-				if color[3] != 0:
-					if self.callback:
-						pygame.event.clear()
-						return self.callback(self)
-			else:
-				if not event in eventos_republicar: eventos_republicar.append(event)
-
-		eventos= pygame.event.get(pygame.MOUSEMOTION)
-		for event in eventos:
-			posicion = event.pos
-			if self.rect.collidepoint(posicion):
-				punto= (int(posicion[0]-self.rect.x), int(posicion[1]-self.rect.y))
-				color= self.image.get_at( punto )
-				if color[3] != 0:
-					if self.select == False:
-						self.image = self.final_select
-						self.select = True
-			else:
-				if self.select == True:
-					self.image = self.final_unselect
-					self.select = False
-			if not event in eventos_republicar: eventos_republicar.append(event)
-		for event in eventos_republicar:
-			pygame.event.post(event)
+class BotonPresentacion(JAMButton):
+	def __init__(self):
+		JAMButton.__init__(self, '', None)
+		self.set_tamanios(tamanio = (0,0), grosorbor = 1, detalle = 1, espesor = 1)
+		imagen1 = os.path.join(G.IMAGENES, "pandilla1.png")
+		self.set_imagen(origen = imagen1)
+		imagen2 = os.path.join(G.IMAGENES, "pandilla2.png")
+		self.final_unselect = pygame.image.load(imagen1)
+		self.final_select = pygame.image.load(imagen2)
+		self.image = self.final_unselect
+		self.rect = self.image.get_rect()
 
 class Presentacion(pygame.sprite.OrderedUpdates):
 	def __init__(self, main):
 		pygame.sprite.OrderedUpdates.__init__(self)
-		self.main= main
-		self.imagenes= G.get_Presentacion()
-		siguiente= None
-		anterior= None
-		salir= None
-		self.imagen_actual= None
-		self.estado= True
-
-		fuente, tamanio= JAMG.get_Font_fawn()
-		w,h= G.RESOLUCION
-
-		siguiente= JAMButton("Siguiente", None)
-		siguiente.set_text(color=JAMG.get_blanco())
-		siguiente.set_font_from_file(fuente, tamanio= 40)
-		siguiente.set_colores(colorbas=JAMG.get_negro(), colorcara=JAMG.get_negro())
-		siguiente.set_tamanios(tamanio=(150,0), grosorbor=1, detalle=1, espesor=1)
-		ww,hh= siguiente.get_tamanio()
-		siguiente.set_posicion(punto= (w-ww-20,h-hh-20))
-		siguiente.connect (callback= self.next)
-		self.add(siguiente)
-
-		anterior= JAMButton("Anterior", None)
-		anterior.set_text(color=JAMG.get_blanco())
-		anterior.set_font_from_file(fuente, tamanio= 40)
-		anterior.set_colores(colorbas=JAMG.get_negro(), colorcara=JAMG.get_negro())
-		anterior.set_tamanios(tamanio=(150,0), grosorbor=1, detalle=1, espesor=1)
-		ww,hh= anterior.get_tamanio()
-		anterior.set_posicion(punto= (20,h-hh-20))
-		anterior.connect (callback= self.previous)
-		self.add(anterior)
-
-		salir= JAMButton("Salir", None)
-		salir.set_text(color=JAMG.get_blanco())
-		salir.set_font_from_file(fuente, tamanio= 40)
-		salir.set_colores(colorbas=JAMG.get_negro(), colorcara=JAMG.get_negro())
-		salir.set_tamanios(tamanio=(150,0), grosorbor=1, detalle=1, espesor=1)
-		ww,hh= salir.get_tamanio()
-		salir.set_posicion(punto= (w/2-ww/2,20))
-		salir.connect (callback= self.volver)
+		self.main = main
+		self.imagenes = G.get_Presentacion()
+		self.siguiente = None
+		self.anterior = None
+		salir = None
+		self.imagen_actual = None
+		self.estado = True
+		fuente, tamanio = JAMG.get_Font_fawn()
+		w,h = G.RESOLUCION
+		self.siguiente = JAMButton("Siguiente", None)
+		self.siguiente.set_text(color = JAMG.get_blanco())
+		self.siguiente.set_font_from_file(fuente, tamanio = 40)
+		self.siguiente.set_colores(colorbas = JAMG.get_negro(), colorcara = JAMG.get_negro())
+		self.siguiente.set_tamanios(tamanio = (150,0), grosorbor = 1, detalle = 1, espesor = 1)
+		ww,hh = self.siguiente.get_tamanio()
+		self.siguiente.set_posicion(punto = (w-ww-20,h-hh-20))
+		self.siguiente.connect(callback = self.next, sonido_select = None)
+		self.add(self.siguiente)
+		self.anterior = JAMButton("Anterior", None)
+		self.anterior.set_text(color = JAMG.get_blanco())
+		self.anterior.set_font_from_file(fuente, tamanio = 40)
+		self.anterior.set_colores(colorbas = JAMG.get_negro(), colorcara = JAMG.get_negro())
+		self.anterior.set_tamanios(tamanio = (150,0), grosorbor = 1, detalle = 1, espesor = 1)
+		ww,hh = self.anterior.get_tamanio()
+		self.anterior.set_posicion(punto = (20,h-hh-20))
+		self.anterior.connect (callback = self.previous, sonido_select = None)
+		self.add(self.anterior)
+		salir = JAMButton("Salir", None)
+		salir.set_text(color = JAMG.get_blanco())
+		salir.set_font_from_file(fuente, tamanio = 40)
+		salir.set_colores(colorbas = JAMG.get_negro(), colorcara = JAMG.get_negro())
+		salir.set_tamanios(tamanio = (150,0), grosorbor = 1, detalle = 1, espesor = 1)
+		ww,hh = salir.get_tamanio()
+		salir.set_posicion(punto = (w/2-ww/2,20))
+		salir.connect(callback = self.volver, sonido_select = None)
 		self.add(salir)
-
-		self.imagen_actual= self.imagenes[0]
-		self.main.fondo= self.imagen_actual
+		self.imagen_actual = self.imagenes[0]
+		self.main.fondo = self.imagen_actual
 
 	def volver(self, button):
 		for sprite in self.sprites():
 			sprite.kill()
 		self.empty()
-		self.estado= False
+		self.estado = False
 
 	def next(self, button):
-		try:
-			indice= self.imagenes.index(self.imagen_actual)
-			if indice < len(self.imagenes)-1:
-				self.imagen_actual= self.imagenes[indice+1]
-				self.main.fondo= self.imagen_actual
-			else:
-				self.imagen_actual= self.imagenes[0]
-			self.main.ventana.blit(self.main.fondo, (0,0))
-			pygame.display.update()
-		except:
-			pass
+		indice = self.imagenes.index(self.imagen_actual)
+		if indice < len(self.imagenes)-1:
+			indice += 1
+			self.imagen_actual = self.imagenes[indice]
+			self.main.fondo = self.imagen_actual
+		self.main.ventana.blit(self.main.fondo, (0,0))
+		pygame.display.update()
+		self.view_buttons(indice)
 
 	def previous(self, button):
-		try:
-			indice= self.imagenes.index(self.imagen_actual)
-			if indice > 1:
-				self.imagen_actual= self.imagenes[indice-1]
-				self.main.fondo= self.imagen_actual
-			else:
-				self.imagen_actual= self.imagenes[-1]
-			self.main.ventana.blit(self.main.fondo, (0,0))
-			pygame.display.update()
-		except:
-			pass
-	
+		indice = self.imagenes.index(self.imagen_actual)
+		if indice > 0:
+			indice -= 1
+			self.imagen_actual = self.imagenes[indice]
+			self.main.fondo = self.imagen_actual
+		self.main.ventana.blit(self.main.fondo, (0,0))
+		pygame.display.update()
+		self.view_buttons(indice)
+
+	def view_buttons(self, indice):
+		if indice == len(self.imagenes)-1:
+			self.remove(self.siguiente)
+		elif indice == 0:
+			self.remove(self.anterior)
+		else:
+			if not self.anterior in self.sprites():
+				self.add(self.anterior)
+			if not self.siguiente in self.sprites():
+				self.add(self.siguiente)
+
