@@ -5,3 +5,4 @@ service_name = org.laptop.Derecho_a_Transitar
 icon = Juego
 show_launcher = yes
 class = Derecho_a_Transitar.Derecho_a_Transitar
+repository = https://github.com/sugarlabs/derecho-a-transitar-activity.git
